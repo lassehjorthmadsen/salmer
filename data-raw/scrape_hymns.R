@@ -15,6 +15,16 @@ hymns <- 1:791 %>% # Hardcoded no of hymns as 791
 hymns <- hymns %>%
   mutate(across(c(hymn_id, verse), as.numeric))
 
+valid_authors <- read.csv2("data-raw/valid-authors.csv", header = FALSE) %>%
+  pull(V1) %>%
+  paste(collapse = "|")
+
+hymns <- hymns %>%
+  mutate(year = str_extract(author, "[:digit:]{4}"),
+         author = str_extract(author, valid_authors),
+         author = str_replace(author, "Wipo", "Wipo af Burgund"),
+         author = str_replace(author, "Gerhard Teerstegen", "Gerhard Tersteegen"))
+
 # Checks
 # Quick look at hymn id, title, author
 hymns %>%

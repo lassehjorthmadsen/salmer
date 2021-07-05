@@ -1,0 +1,80 @@
+---
+title: "Finding Characteristic Words for Famous Writers of Hymns"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Finding Characteristic Words for Famous Writers of Hymns}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+devtools::load_all()
+library(tidyverse)
+library(tidytext)
+library(tidylo)
+library(forcats)
+theme_set(theme_minimal())
+```
+
+# Introduction
+
+# `salmer`
+
+```{r}
+df <- hymns %>% 
+  mutate(author = author %>% 
+           fct_infreq() %>% 
+           fct_lump_n(n = 1) %>% 
+           fct_explicit_na(na_level = "Other"))
+```
+
+```{r}
+stopda <- tibble(word = stopwords::stopwords(language = "da"))
+
+toks <- df %>% 
+  unnest_tokens(word, text) %>% 
+  count(author, word, sort = TRUE) %>% 
+  #anti_join(stopda) %>% 
+  bind_log_odds(author, word, n, unweighted = T) %>% 
+  mutate(sum_n = sum(n)) %>% 
+  group_by(author) %>% 
+  mutate(sum_author = sum(n)) %>% 
+  group_by(word) %>% 
+  mutate(sum_word = sum(n)) %>% 
+  ungroup() %>% 
+  mutate(p = (n+1)/(sum_author+1),
+         odds = p/(1-p),
+         log_odds3 = log(odds))
+  
+  mutate(log_odds2 = log(
+    ((n + 1) / (sum_author + 1)) / 
+    ((sum_word - n + 1) / (sum_n - sum_author +1))
+    )
+  )
+
+
+```
+
+```{r}
+toks %>%
+    group_by(author) %>%
+    top_n(10, log_odds_weighted) %>%
+    ungroup %>%
+    mutate(word = fct_reorder(word, log_odds_weighted)) %>%
+    ggplot(aes(word, log_odds_weighted, fill = author)) +
+    geom_col(show.legend = FALSE) +
+    facet_wrap(~ author, scales = "free_y") +
+    coord_flip() +
+    scale_y_continuous(expand = c(0,0)) +
+    labs(y = "Log odds ratio, weighted by uninformative Dirichlet prior",
+         x = NULL,
+         title = "What are the most characteristic words for each writer?")
+```
+
