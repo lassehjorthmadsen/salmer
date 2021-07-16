@@ -12,7 +12,8 @@
 #' ## Not run
 #' collapse_annotation(df)
 #'
-collapse_annotation <- function(df) {
+collapse_annotation <- function(df, token = token) {
+  token <- enquo(token)
 
   fix_leading_spaces <- c(" ," = ",",
                           " !" = "!",
@@ -26,7 +27,7 @@ collapse_annotation <- function(df) {
                           " \\\"" = "\\\"")
   out <- df %>%
     group_by(doc_id, paragraph_id) %>%
-    summarise(text = paste(token, collapse = " ")) %>%
+    summarise(text = paste(!!token, collapse = " ")) %>%
     ungroup() %>%
     mutate(text = str_replace_all(text, fix_leading_spaces))
 
