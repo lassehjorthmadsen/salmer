@@ -5,31 +5,40 @@
 #' back into lines of text
 #'
 #' @param df A tibble based on output from \code{udpipe::udpipe_annotate()}
-#' which is assumed to contain \code{token}, \code{doc_id},
-#' and \code{paragraph_id} columns.
+#' @param token Name of column containing tokens to be collapsed
+#' @param doc_id Name of column containing document ids to group by
+#' @param paragraph_id Name of column containing paragraph ids to group by
+#' @param text Name of column to contain collapsed text
+#'
 #' @return A tibble with lines in column \code{text}.
 #' @examples
 #' ## Not run
-#' collapse_annotation(df)
+#' collapse_annotation(annotated_hymns)
 #'
-collapse_annotation <- function(df, token = token) {
-  token <- enquo(token)
+#' @export
+collapse_annotation <- function(df,
+                                token = token,
+                                doc_id = doc_id,
+                                paragraph_id = paragraph_id,
+                                text = text) {
+  token <- dplyr::enquo(token)
 
+  # Damn « and »
   fix_leading_spaces <- c(" ," = ",",
                           " !" = "!",
                           " :" = ":",
                           " ;" = ";",
-                          " «" = "«",
-                          "» " = "»",
+                          " \\u00AB" = "\\u00AB", # «
+                          "\\u00BB " = "\\u00BB", # »
                           " \\?" = "\\?",
                           " \\." = "\\.",
                           "\\\" " = "\\\"",
                           " \\\"" = "\\\"")
   out <- df %>%
-    group_by(doc_id, paragraph_id) %>%
-    summarise(text = paste(!!token, collapse = " ")) %>%
-    ungroup() %>%
-    mutate(text = str_replace_all(text, fix_leading_spaces))
+    dplyr::group_by(doc_id, paragraph_id) %>%
+    dplyr::summarise(text = paste(!!token, collapse = " ")) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(text = stringr::str_replace_all(text, fix_leading_spaces))
 
   return(out)
 }

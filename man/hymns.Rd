@@ -3,27 +3,26 @@
 \docType{data}
 \name{hymns}
 \alias{hymns}
-\title{Hymns in Danish, scrapped from www.dendanskesalmebogonline.dk
-Each row corresponds to one line from one hymn, with information
-on hymn number, title, author and more (see below).}
+\title{Hymns in Danish}
 \format{
 A tibble with 24,715 rows and 9 variables:
 \describe{
-\item{hymn_id}{Official hymn number}
+\item{doc_id}{Official hymn number}
 \item{title}{Title of hymn}
 \item{verse}{Number of verse}
 \item{text}{one line of text}
 \item{copyright}{first line of metadata: copyright holder}
 \item{melody1}{second line of metadata: usually melody}
 \item{melody2}{third line of metadata: sometimes name of composer}
-...
 }
 }
 \usage{
 hymns
 }
 \description{
-Hymns in Danish, scrapped from www.dendanskesalmebogonline.dk
+A dataset containing full text and metadata for 791 hymns officially
+used in Danish churches. Data is scrapped from
+\href{http://www.dendanskesalmebogonline.dk}{Den Danske Salmebog Online}.
 Each row corresponds to one line from one hymn, with information
 on hymn number, title, author and more (see below).
 }

@@ -4,12 +4,24 @@
 \alias{collapse_annotation}
 \title{'Collapses' a annotation back into text}
 \usage{
-collapse_annotation(df)
+collapse_annotation(
+  df,
+  token = token,
+  doc_id = doc_id,
+  paragraph_id = paragraph_id,
+  text = text
+)
 }
 \arguments{
-\item{df}{A tibble based on output from \code{udpipe::udpipe_annotate()}
-which is assumed to contain \code{token}, \code{doc_id},
-and \code{paragraph_id} columns.}
+\item{df}{A tibble based on output from \code{udpipe::udpipe_annotate()}}
+
+\item{token}{Name of column containing tokens to be collapsed}
+
+\item{doc_id}{Name of column containing document ids to group by}
+
+\item{paragraph_id}{Name of column containing paragraph ids to group by}
+
+\item{text}{Name of column to contain collapsed text}
 }
 \value{
 A tibble with lines in column \code{text}.
@@ -20,6 +32,6 @@ back into lines of text
 }
 \examples{
 ## Not run
-collapse_annotation(df)
+collapse_annotation(annotated_hymns)
 
 }
