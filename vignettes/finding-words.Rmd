@@ -10,12 +10,13 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  echo = FALSE,
+  message = FALSE
 )
 ```
 
 ```{r setup}
-devtools::load_all()
+library(salmer)
 library(tidyverse)
 library(tidytext)
 library(tidylo)
@@ -51,15 +52,11 @@ toks <- df %>%
   ungroup() %>% 
   mutate(p = (n+1)/(sum_author+1),
          odds = p/(1-p),
-         log_odds3 = log(odds))
-  
-  mutate(log_odds2 = log(
-    ((n + 1) / (sum_author + 1)) / 
+         log_odds3 = log(odds),
+         log_odds2 = log(((n + 1) / (sum_author + 1)) / 
     ((sum_word - n + 1) / (sum_n - sum_author +1))
     )
   )
-
-
 ```
 
 ```{r}

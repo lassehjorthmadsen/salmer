@@ -4,7 +4,17 @@
 \alias{cut_up}
 \title{'Cut-up' a hymn (or something else)}
 \usage{
-cut_up(df, ref_id = 1)
+cut_up(
+  df,
+  ref_id = 1,
+  except = NULL,
+  token = token,
+  token_no = token_no,
+  doc_id = doc_id,
+  vowels = vowels,
+  upos = upos,
+  token_new = token_new
+)
 }
 \arguments{
 \item{df}{A tibble based on output from \code{udpipe::udpipe_annotate()}
@@ -12,6 +22,20 @@ which is assumed to also contain a \code{wovel} column.}
 
 \item{ref_id}{An integer number; this is the text that
 will get new words.}
+
+\item{except}{character. upos tags that will not be cut-up.}
+
+\item{token}{Name of column containing tokens}
+
+\item{token_no}{Name of column containing token ids}
+
+\item{doc_id}{Name of column containing document ids}
+
+\item{vowels}{Name of column containing number of wovels in token}
+
+\item{upos}{Name of column containing POS-tag}
+
+\item{token_new}{Name of column to contain a new, suggested token}
 }
 \value{
 A tibble with new column \code{token_new} with a suggested
@@ -21,10 +45,10 @@ replacement for column \code{token}.
 Using the cut-up technique popularized by William S. Burroughs,
 \code{cut_up()} replaces each word in the reference document with
 a random sample of words with same number of wovels
-and same part-of-speach-tag
+and same part-of-speach-tag.
 }
 \examples{
 ## Not run
-cut_up(hymns)
+cut_up(annotated_hymns)
 
 }

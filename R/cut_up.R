@@ -10,27 +10,44 @@
 #' which is assumed to also contain a \code{wovel} column.
 #' @param ref_id An integer number; this is the text that
 #' will get new words.
+#' @param except character. upos tags that will not be cut-up.
+#' @param token Name of column containing tokens
+#' @param token_no Name of column containing token ids
+#' @param doc_id Name of column containing document ids
+#' @param vowels Name of column containing number of wovels in token
+#' @param upos Name of column containing POS-tag
+#' @param token_new Name of column to contain a new, suggested token
+#'
 #' @return A tibble with new column \code{token_new} with a suggested
 #' replacement for column \code{token}.
 #' @examples
 #' ## Not run
-#' cut_up(hymns)
+#' cut_up(annotated_hymns)
 #'
-cut_up <- function(df, ref_id = 1, except = NULL) {
+#' @export
+cut_up <- function(df,
+                   ref_id = 1,
+                   except = NULL,
+                   token = token,
+                   token_no = token_no,
+                   doc_id = doc_id,
+                   vowels = vowels,
+                   upos = upos,
+                   token_new = token_new) {
 
   # For each token, sample 1 out of all possible matches
-  out <- filter(df, doc_id == ref_id) %>%
-    rowid_to_column("token_no") %>%
-    left_join(select(df, token, upos, vowels),
+  out <- dplyr::filter(df, doc_id == ref_id) %>%
+    tibble::rowid_to_column("token_no") %>%
+    dplyr::left_join(dplyr::select(df, token, upos, vowels),
               by = c("upos", "vowels"),
               suffix = c("", "_new")) %>%
-    group_by(token_no) %>%
-    slice_sample(n = 1) %>%
-    ungroup()
+    dplyr::group_by(token_no) %>%
+    dplyr::slice_sample(n = 1) %>%
+    dplyr::ungroup()
 
   # Exceptions: Keep the original for these upos values
   out <- out %>%
-    mutate(token_new = ifelse(upos %in% except, token, token_new))
+    dplyr::mutate(token_new = ifelse(upos %in% except, token, token_new))
 
   return(out)
 }

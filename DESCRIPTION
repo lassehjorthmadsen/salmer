@@ -19,6 +19,11 @@ Depends:
 Suggests: 
     rmarkdown,
     knitr,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
 Config/testthat/edition: 3
-VignetteBuilder: knitr
+VignetteBuilder: rmarkdown
+Imports: 
+    dplyr,
+    magrittr,
+    stringr,
+    tibble
