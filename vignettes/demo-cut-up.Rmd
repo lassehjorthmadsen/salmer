@@ -10,14 +10,12 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  echo = FALSE,
   comment = "#>"
 )
 ```
 
 ```{r setup}
-devtools::load_all()
-library(tidyverse)
+library(salmer)
 ```
 
 ## Introduction
@@ -26,8 +24,8 @@ Let's try to use the cut-up technique on the top popular hymn, *Se, nu stiger so
 
 ```{r}
 hymns %>% 
-  filter(doc_id == 754) %>% 
-  select(doc_id, verse, text) 
+  dplyr::filter(doc_id == 754) %>% 
+  dplyr::select(doc_id, verse, text) 
 ```
 
 ## Cutting it up
@@ -37,9 +35,9 @@ Inspecting a few colums from the annotation dataframe, `annotated_hymns`, availa
 We can retain a (little) bit of sanity, by excepting punctuation from being cut up, so that an exclamation mark will stay that and not turn into a semicolon. (The `except` parameter accepts a character vector, so we can have more than one exception).
 
 ```{r}
-cut754 <- annotated_hymns %>% cut_up(754, except = "PUNCT")
+cut754 <- salmer::annotated_hymns %>% cut_up(754, except = "PUNCT")
 
-cut754 %>% select(doc_id, token, upos, vowels, token_new)
+cut754 %>% dplyr::select(doc_id, token, upos, vowels, token_new)
 ```
 
 ## Collapsing back into readable text
@@ -49,23 +47,23 @@ In order to better be able to appreciate the beauty of the poetry, we would like
 For starters, we can check how the original text looks like, by collapsing using the `token` column:
 
 ```{r}
-cut754 %>% collapse_annotation(token)
+cut754 %>% salmer::collapse_annotation(token)
 ```
 
 The cut-up-version, has suggested words in the `token_new` column. This version will read as follows:
 
 ```{r}
-cut754 %>% collapse_annotation(token_new)
+cut754 %>% salmer::collapse_annotation(token_new)
 ```
 
 For better comparison, we can arrange the two versions side-by-side:
 
 ```{r}
-bind_cols(
-  collapse_annotation(cut754, token), 
-  collapse_annotation(cut754, token_new)
+dplyr::bind_cols(
+  salmer::collapse_annotation(cut754, token), 
+  salmer::collapse_annotation(cut754, token_new)
   ) %>% 
-  select(doc_id = doc_id...1, 
+  dplyr::select(doc_id = doc_id...1, 
          paragraph_id = paragraph_id...2, 
          original = text...3, 
          cut_up_text = text...6)

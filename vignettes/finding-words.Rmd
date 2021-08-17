@@ -10,18 +10,13 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  echo = FALSE,
-  message = FALSE
+  comment = "#>"
 )
 ```
 
 ```{r setup}
 library(salmer)
-library(tidyverse)
-library(tidytext)
-library(tidylo)
-library(forcats)
-theme_set(theme_minimal())
+#ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
 # Introduction
@@ -30,27 +25,27 @@ theme_set(theme_minimal())
 
 ```{r}
 df <- hymns %>% 
-  mutate(author = author %>% 
-           fct_infreq() %>% 
-           fct_lump_n(n = 1) %>% 
-           fct_explicit_na(na_level = "Other"))
+  dplyr::mutate(author = author %>% 
+           forcats::fct_infreq() %>% 
+           forcats::fct_lump_n(n = 1) %>% 
+           forcats::fct_explicit_na(na_level = "Other"))
 ```
 
 ```{r}
-stopda <- tibble(word = stopwords::stopwords(language = "da"))
+stopda <- dplyr::tibble(word = stopwords::stopwords(language = "da"))
 
 toks <- df %>% 
-  unnest_tokens(word, text) %>% 
-  count(author, word, sort = TRUE) %>% 
+  tidytext::unnest_tokens(word, text) %>% 
+  dplyr::count(author, word, sort = TRUE) %>% 
   #anti_join(stopda) %>% 
-  bind_log_odds(author, word, n, unweighted = T) %>% 
-  mutate(sum_n = sum(n)) %>% 
-  group_by(author) %>% 
-  mutate(sum_author = sum(n)) %>% 
-  group_by(word) %>% 
-  mutate(sum_word = sum(n)) %>% 
-  ungroup() %>% 
-  mutate(p = (n+1)/(sum_author+1),
+  tidylo::bind_log_odds(author, word, n, unweighted = T) %>% 
+  dplyr::mutate(sum_n = sum(n)) %>% 
+  dplyr::group_by(author) %>% 
+  dplyr::mutate(sum_author = sum(n)) %>% 
+  dplyr::group_by(word) %>% 
+  dplyr::mutate(sum_word = sum(n)) %>% 
+  dplyr::ungroup() %>% 
+  dplyr::mutate(p = (n+1)/(sum_author+1),
          odds = p/(1-p),
          log_odds3 = log(odds),
          log_odds2 = log(((n + 1) / (sum_author + 1)) / 
@@ -61,16 +56,16 @@ toks <- df %>%
 
 ```{r}
 toks %>%
-    group_by(author) %>%
-    top_n(10, log_odds_weighted) %>%
-    ungroup %>%
-    mutate(word = fct_reorder(word, log_odds_weighted)) %>%
-    ggplot(aes(word, log_odds_weighted, fill = author)) +
-    geom_col(show.legend = FALSE) +
-    facet_wrap(~ author, scales = "free_y") +
-    coord_flip() +
-    scale_y_continuous(expand = c(0,0)) +
-    labs(y = "Log odds ratio, weighted by uninformative Dirichlet prior",
+    dplyr::group_by(author) %>%
+    dplyr::top_n(10, log_odds_weighted) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(word = forcats::fct_reorder(word, log_odds_weighted)) %>%
+    ggplot2::ggplot(ggplot2::aes(word, log_odds_weighted, fill = author)) +
+    ggplot2::geom_col(show.legend = FALSE) +
+    ggplot2::facet_wrap(~ author, scales = "free_y") +
+    ggplot2::coord_flip() +
+    ggplot2::scale_y_continuous(expand = c(0,0)) +
+    ggplot2::labs(y = "Log odds ratio, weighted by uninformative Dirichlet prior",
          x = NULL,
          title = "What are the most characteristic words for each writer?")
 ```

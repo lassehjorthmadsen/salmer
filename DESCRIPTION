@@ -21,9 +21,14 @@ Suggests:
     knitr,
     testthat (>= 3.0.0),
 Config/testthat/edition: 3
-VignetteBuilder: rmarkdown
+VignetteBuilder: knitr
 Imports: 
     dplyr,
     magrittr,
     stringr,
-    tibble
+    tibble,
+    forcats,
+    ggplot2,
+    tidytext,
+    stopwords,
+    tidylo
