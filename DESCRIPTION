@@ -31,4 +31,5 @@ Imports:
     ggplot2,
     tidytext,
     stopwords,
-    tidylo
+    tidylo,
+    rlang

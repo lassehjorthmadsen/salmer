@@ -3,4 +3,6 @@
 export("%>%")
 export(collapse_annotation)
 export(cut_up)
+export(get_rhymes)
 importFrom(magrittr,"%>%")
+importFrom(rlang,.data)
