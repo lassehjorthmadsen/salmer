@@ -9,13 +9,16 @@
 
 url <- "https://www.nb.no/sbfil/leksikalske_databaser/leksikon/da_leksikon.tar.gz"
 file <- basename(url)
-download.file(url, file)
 
-untar(file, exdir = "data-raw/")
 files <- list.files("data-raw", full.names = TRUE, recursive = TRUE)
+diction_files <- str_detect(files, "dan030224NST.pron$")
 
-df <- read.delim(files[str_detect(files, "dan030224NST.pron$")],
-                 sep = ";", quote = "", header = FALSE, skip = 3)
+if (any(diction_files)) {
+  df <- read.delim(files[which(diction_files)[1]], sep = ";", quote = "", header = FALSE, skip = 3)
+} else {
+  download.file(url, file)
+  untar(file, exdir = "data-raw/")
+}
 
 # Encoding(df$V1) <- "UTF-8"   # Required by CRAN it seems. Find workaround?
 # Encoding(df$V12) <- "UTF-8"
@@ -27,6 +30,7 @@ pronounciation <- df %>%
   filter(!str_detect(token, "_")) %>% # Skip some multi-word entries
   mutate(rhyme_part = str_extract(sampa, "\".+"), # Stressed syllable and everyhing after
          stress_vowel = str_extract(rhyme_part, vowels_pat), # Vowel part of stressed syllable
+         stress_vowel = str_remove(stress_vowel, "\\?"), # Get rid of '?' indicating 'push'
          remainder = str_extract(rhyme_part, "\\$.+$")) %>% # Everything after stressed syllable
   as_tibble()
 
