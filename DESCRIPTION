@@ -8,7 +8,7 @@ Authors@R:
            email = "lassehjorthmadsen@gmail.com")
 Description: Provides text from 791 hymns in Danish, from 
    'Den Danske Samlebog', optained from www.dendanskesalmebogonline.dk.
-   This is intended as a data set for teaching and research in NLP.
+   This is intended as a data set for fun, teaching, and research in NLP.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
