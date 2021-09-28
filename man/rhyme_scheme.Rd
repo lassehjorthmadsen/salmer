@@ -4,11 +4,17 @@
 \alias{rhyme_scheme}
 \title{Get rhyme scheme for a given hymn}
 \usage{
-rhyme_scheme(ref_id = 1, df)
+rhyme_scheme(ref_id = 1, df, pron)
 }
 \arguments{
+\item{ref_id}{An integer number, refering to a hymn number}
+
 \item{df}{tibble based on output from \code{udpipe::udpipe_annotate()}
 similar to the \code{annotated_hymns} dataset.}
+
+\item{pron}{A tibble assumed to contain a \code{token},
+a \code{stress_vowel} and a \code{remainder} column, all
+coded in then phonetic alphabet. Passed on to \code{get_rhymes()}.}
 }
 \value{
 a tibble with rhyme structure in new column, \code{scheme}. The
@@ -18,9 +24,4 @@ above.
 }
 \description{
 Get rhyme scheme for a given hymn
-}
-\examples{
-## Not run
-cut_up(annotated_hymns)
-
 }

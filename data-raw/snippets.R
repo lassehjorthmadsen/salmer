@@ -1,20 +1,35 @@
 library(tidyverse)
-devtools::load_all()
+library(devtools)
+load_all()
 
+# Show sample hymns
+hymns %>% filter(doc_id == 1) %>% pull(text)
+
+# Get pronounciation dictionary
+pronounciation <- readRDS("data-raw/pronounciation.rds")
+
+# cut_up
+cu <- cut_up(ref_id = 1, df = annotated_hymns, except = "PUNCT")
+
+# show cut-up version
+cu %>% collapse_annotation(token = token_new)
+
+# show original
+cu %>% collapse_annotation(token = token)
+
+# get rhyme_scheme:
+rs <- rhyme_scheme(ref_id = 1, df = annotated_hymns, pron = pronounciation)
+
+# Compare rows
+cu %>% nrow()
+rs %>% nrow()
+annotated_hymns %>% filter(doc_id == 1) %>% nrow()
+
+# bind rhyme scheme
+cu2 <- cu %>% bind_cols(select(rs, scheme))
 
 # Test some (possible) rhyms:
-rhyms <- pronounciation %>%
-  slice_sample(n = 1000) %>%
-  left_join(select(pronounciation, rhyme = token, stress_vowel, remainder),
-            by = c("stress_vowel", "remainder")) %>%
-  filter(token != rhyme) %>%
-  group_by(token) %>%
-  slice_sample(n = 5) %>%
-  ungroup()
-
-rhyms %>%
-  select(token, rhyme) %>%
-  slice_sample(n = 5)
+get_rhymes("borg", pronounciation)
 
 
 
