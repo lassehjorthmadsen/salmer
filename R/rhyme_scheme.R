@@ -23,16 +23,18 @@ rhyme_scheme <- function(ref_id = 1, df, pron) {
 
   last_words <- song %>%
     dplyr::filter(.data$upos != "PUNCT") %>%
-    dplyr::group_by(.data$paragraph_id) %>%
+    dplyr::group_by(.data$line_id) %>%
     dplyr::slice_tail(n = 1) %>%
     dplyr::mutate(rhymes = list(get_rhymes(.data$token, pron))) %>%
     dplyr::ungroup()
 
   rhymes <- last_words %>%
+    dplyr::group_by(.data$verse) %>%
     dplyr::mutate(lag1 = dplyr::lag(.data$token, 1),
                   lag2 = dplyr::lag(.data$token, 2),
                   lag3 = dplyr::lag(.data$token, 3),
                   lag4 = dplyr::lag(.data$token, 4)) %>%
+    dplyr::ungroup() %>%
     dplyr::rowwise() %>%
     dplyr::mutate(scheme = dplyr::case_when(lag1 %in% unlist(rhymes) ~ 1,
                                             lag2 %in% unlist(rhymes) ~ 2,

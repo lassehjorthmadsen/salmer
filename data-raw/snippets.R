@@ -36,14 +36,7 @@ cu %>%
 # Get more rhyme schemas (takes a while)
 many_rs <- 1:2 %>% map(rhyme_scheme, df = annotated_hymns, pron = pronounciation)
 
-ah <- annotated_hymns %>% left_join(select(hymns, doc_id, line_id, verse),
-                                    by = c("doc_id" = "doc_id", "paragraph_id" = "line_id"))
 
-v2 <- ah %>% group_by(doc_id) %>% summarise(vers = max(verse))
-v1 <- hymns %>% group_by(doc_id) %>% summarise(vers = max(verse))
-v3 <- v1 %>% left_join(v2, by = "doc_id")
-
-rs <- rhyme_scheme(ref_id = 1, df = annotated_hymns, pron = pronounciation)
 
 
 
