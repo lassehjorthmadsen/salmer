@@ -64,7 +64,7 @@ dplyr::bind_cols(
   salmer::collapse_annotation(cut754, token_new)
   ) %>% 
   dplyr::select(doc_id = doc_id...1, 
-         paragraph_id = paragraph_id...2, 
+         line_id = line_id...2, 
          original = text...3, 
          cut_up_text = text...6)
 ```

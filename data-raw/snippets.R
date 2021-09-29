@@ -20,13 +20,36 @@ cu %>% collapse_annotation(token = token)
 # get rhyme_scheme:
 rs <- rhyme_scheme(ref_id = 1, df = annotated_hymns, pron = pronounciation)
 
-# Compare rows
-cu %>% nrow()
-rs %>% nrow()
-annotated_hymns %>% filter(doc_id == 1) %>% nrow()
-
 # bind rhyme scheme
-cu2 <- cu %>% bind_cols(select(rs, scheme))
+cu <- cu %>% bind_cols(select(rs, scheme))
+
+# view line endings
+cu %>%
+  filter(upos != "PUNCT") %>%
+  group_by(paragraph_id) %>%
+  slice_max(order_by = token_id) %>%
+  ungroup() %>%
+  select(paragraph_id, token_id, token,token_new,scheme) %>%
+  mutate(must_rhyme_with = if_else(is.na(scheme), NA, lag(token_new, n = scheme))) %>%
+  view()
+
+# Get more rhyme schemas (takes a while)
+many_rs <- 1:2 %>% map(rhyme_scheme, df = annotated_hymns, pron = pronounciation)
+
+ah <- annotated_hymns %>% left_join(select(hymns, doc_id, line_id, verse),
+                                    by = c("doc_id" = "doc_id", "paragraph_id" = "line_id"))
+
+v2 <- ah %>% group_by(doc_id) %>% summarise(vers = max(verse))
+v1 <- hymns %>% group_by(doc_id) %>% summarise(vers = max(verse))
+v3 <- v1 %>% left_join(v2, by = "doc_id")
+
+rs <- rhyme_scheme(ref_id = 1, df = annotated_hymns, pron = pronounciation)
+
+
+
+# Can't simply do
+cu %>% filter(!is.na(scheme)) %>% mutate(test = lag(token, scheme))
+
 
 # Test some (possible) rhyms:
 get_rhymes("borg", pronounciation)

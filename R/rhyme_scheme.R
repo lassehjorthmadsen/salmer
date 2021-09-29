@@ -18,7 +18,7 @@
 rhyme_scheme <- function(ref_id = 1, df, pron) {
 
   song <- df %>%
-    tibble::rowid_to_column(.data, "row_id") %>%
+    tibble::rowid_to_column("row_id") %>%
     dplyr::filter(.data$doc_id == ref_id)
 
   last_words <- song %>%

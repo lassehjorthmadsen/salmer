@@ -26,7 +26,10 @@ hymns <- hymns %>%
          author = str_replace(author, "Wipo", "Wipo af Burgund"),
          author = str_replace(author, "Gerhard Teerstegen", "Gerhard Tersteegen"),
          text = str_trim(text),
-         text = str_remove_all(text, "[:digit:]"))
+         text = str_remove_all(text, "[:digit:]")) %>%
+  group_by(doc_id) %>%
+  mutate(line_id = row_number()) %>%
+  ungroup()
 
 # Checks
 # Quick look at hymn id, title, author

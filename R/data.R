@@ -11,11 +11,14 @@
 #' \describe{
 #'   \item{doc_id}{Official hymn number}
 #'   \item{title}{Title of hymn}
-#'   \item{verse}{Number of verse}
+#'   \item{verse}{Verse number}
 #'   \item{text}{one line of text}
 #'   \item{copyright}{first line of metadata: copyright holder}
 #'   \item{melody1}{second line of metadata: usually melody}
 #'   \item{melody2}{third line of metadata: sometimes name of composer}
+#'   \item{no_verses}{Total number of verses}
+#'   \item{year}{Year the hymn was written, if known}
+#'   \item{line_id}{line number}
 #' }
 "hymns"
 

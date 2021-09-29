@@ -45,6 +45,15 @@ if (!file.exists("data/annotated_hymns.rda")) {
     left_join(pron, by = "token_low") %>%
     select(-token_low)
 
+  # Rename paragraph_id to line_id for consistency with hymn dataset
+  annotated_hymns <- annotated_hymns %>%
+    rename(line_id = paragraph_id)
+
+  # Get verse number back
+  annotated_hymns <- annotated_hymns %>%
+    left_join(select(hymns, doc_id, line_id, verse),
+              by = c("doc_id" = "doc_id", "line_id" = "line_id"))
+
   # use data in package
   usethis::use_data(annotated_hymns, overwrite = TRUE)
   }

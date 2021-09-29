@@ -8,7 +8,7 @@ collapse_annotation(
   df,
   token = token,
   doc_id = doc_id,
-  paragraph_id = paragraph_id,
+  line_id = line_id,
   text = text
 )
 }
@@ -19,7 +19,7 @@ collapse_annotation(
 
 \item{doc_id}{Name of column containing document ids to group by}
 
-\item{paragraph_id}{Name of column containing paragraph ids to group by}
+\item{line_id}{Name of column containing line ids to group by}
 
 \item{text}{Name of column to contain collapsed text}
 }
