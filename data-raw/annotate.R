@@ -30,7 +30,7 @@ if (!file.exists("data/annotated_hymns.rda")) {
                                      x = hymns$text,
                                      doc_id = as.character(hymns$doc_id)) %>%
     as_tibble() %>%
-    mutate(vowels = str_count(token, "a|e|i|o|u|y|æ|ø|å")) %>%
+    mutate(vowels = str_count(tolower(token), "a|e|i|o|u|y|æ|ø|å|é|ó|í")) %>%
     mutate(across(c(doc_id, token_id, head_token_id), as.integer)) %>%
     select(-sentence_id, -sentence, -xpos, -feats, -head_token_id, -dep_rel, -deps, -misc)
 

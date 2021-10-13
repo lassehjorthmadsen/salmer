@@ -9,7 +9,9 @@ hymns %>% filter(doc_id == 1) %>% pull(text)
 pronounciation <- readRDS("data-raw/pronounciation.rds")
 
 # cut_up
-cu <- cut_up(ref_id = 1, df = annotated_hymns, except = "PUNCT")
+cu <- cut_up(ref_id = 1,
+             df = annotated_hymns,
+             except = "PUNCT")
 
 # show cut-up version
 cu %>% collapse_annotation(token = token_new)
@@ -18,23 +20,72 @@ cu %>% collapse_annotation(token = token_new)
 cu %>% collapse_annotation(token = token)
 
 # get rhyme_scheme:
-rs <- rhyme_scheme(ref_id = 1, df = annotated_hymns, pron = pronounciation)
+rs <- rhyme_scheme(ref_id = 1,
+                   df = annotated_hymns,
+                   pron = pronounciation)
 
 # bind rhyme scheme
 cu <- cu %>% bind_cols(select(rs, scheme))
 
-# view line endings
-cu %>%
+# get new rhymes
+
+# first, df with both pronounciation and POS
+pr <- pronounciation %>%
+  distinct(token, .keep_all = T) %>%
+  inner_join(distinct(annotated_hymns, token), by = "token") %>%
+  select(token, stress_vowel, remainder)
+
+
+nr <- cu %>%
+  rowid_to_column("row_id") %>%
   filter(upos != "PUNCT") %>%
-  group_by(paragraph_id) %>%
+  group_by(line_id) %>%
   slice_max(order_by = token_id) %>%
   ungroup() %>%
-  select(paragraph_id, token_id, token,token_new,scheme) %>%
-  mutate(must_rhyme_with = if_else(is.na(scheme), NA, lag(token_new, n = scheme))) %>%
-  view()
+  select(row_id,
+         token_new,
+         vowels,
+         upos,
+         scheme) %>%
+  left_join(pr, by = c("token_new" = "token")) %>%
+  mutate(
+    must_rhyme_stress = case_when(
+      scheme == 1 ~ lag(stress_vowel, 1),
+      scheme == 2 ~ lag(stress_vowel, 2),
+      scheme == 3 ~ lag(stress_vowel, 3),
+      scheme == 4 ~ lag(stress_vowel, 4),
+      TRUE ~ NA_character_
+    ),
+    must_rhyme_remainder = case_when(
+      scheme == 1 ~ lag(remainder, 1),
+      scheme == 2 ~ lag(remainder, 2),
+      scheme == 3 ~ lag(remainder, 3),
+      scheme == 4 ~ lag(remainder, 4),
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  filter(!is.na(scheme)) %>%
+  left_join(select(annotated_hymns, token, vowels, upos, stress_vowel, remainder),
+            by = c("vowels" = "vowels",
+                   "upos" = "upos",
+                   "must_rhyme_stress" = "stress_vowel",
+                   "must_rhyme_remainder" = "remainder")) %>%
+  group_by(row_id) %>%
+  filter(token_new != token) %>%
+  filter(token != "") %>%
+  slice_sample(n = 1) %>%
+  ungroup()
+
+cu2 <- cu %>%
+  left_join(select(nr, row_id, token), by = c("token_no" ="row_id")) %>%
+  mutate(token_new = coalesce(token.y, token_new))
+
+# show final cut-up version
+cu %>% collapse_annotation(token = token_new)
 
 # Get more rhyme schemas (takes a while)
-many_rs <- 1:2 %>% map(rhyme_scheme, df = annotated_hymns, pron = pronounciation)
+many_rs <-
+  1:2 %>% map(rhyme_scheme, df = annotated_hymns, pron = pronounciation)
 
 
 
