@@ -3,7 +3,7 @@ library(devtools)
 load_all()
 
 # Get pronounciation dictionary
-pronounciation <- readRDS("data-raw/pronounciation.rds")
+# pronounciation <- readRDS("data-raw/pronounciation.rds")
 
 test_hymn <- 749
 
@@ -19,75 +19,76 @@ test_hymn <- 749
 # 731 Nu står der skum fra bølgetop
 # 729 Nu falmer skoven trindt om land
 
-# cut_up
+# cut up
 cu <- cut_up(ref_id = test_hymn,
              df = annotated_hymns,
              except = "PUNCT")
 
-# get new rhymes
-
-# first, df with rhyme info
-# (consider if whole pronounciation dictionary should be used for fixing ryhmes)
-pr <- pronounciation %>%
-  distinct(token, .keep_all = T) %>%
-  inner_join(distinct(cu, token), by = "token") %>%
-  select(token, stress_vowel, remainder) %>%
-  mutate(token = tolower(token))
-
-# then, df with all tokens from hymns, with rhyme info
-annotated_tokens <- annotated_hymns %>%
-  select(token, vowels, stress_vowel, remainder) %>%
-  distinct(.keep_all = TRUE)
-
-# Filter out all last words in our cut-up
-last_words <- cu %>%
-  rowid_to_column("row_id") %>%
-  filter(upos != "PUNCT") %>%
-  group_by(line_id) %>%
-  slice_tail(n = 1) %>%
-  ungroup() %>%
-  select(row_id,
-         token_new,
-         vowels,
-         upos,
-         rhyme_scheme) %>%
-  mutate(token_new = tolower(token_new))
-
-# Get rhyming contrains, if any
-last_words2 <- last_words %>%
-  mutate(
-    must_rhyme_with = case_when(
-      rhyme_scheme == 1 ~ lag(token_new, 1),
-      rhyme_scheme == 2 ~ lag(token_new, 2),
-      rhyme_scheme == 3 ~ lag(token_new, 3),
-      rhyme_scheme == 4 ~ lag(token_new, 4),
-      TRUE ~ NA_character_)
-    ) %>%
-  left_join(pronounciation, by = c("must_rhyme_with" = "token")) %>%
-  filter(!is.na(rhyme_scheme)) %>%
-  left_join(annotated_tokens,
-            by = c("vowels" = "vowels",
-                   #"upos" = "upos", We don't constrain on upos for rhymes
-                   "stress_vowel" = "stress_vowel",
-                   "remainder" = "remainder")) %>%
-  filter(must_rhyme_with != tolower(token)) %>%
-  group_by(row_id) %>%
-  filter(token != "") %>%
-  slice_sample(n = 1) %>%
-  ungroup()
-
-# Fix rhymes
-cu_final <- cu %>%
-  left_join(select(last_words2, row_id, token), by = c("token_no" ="row_id")) %>%
-  mutate(token_new = coalesce(token.y, token_new))
+# new rhymes
+nr <- new_rhymes(cu, annotated_hymns)
 
 # show final cut-up version along with original and other bits
-cu_final %>%
+nr %>%
   collapse_annotation(token = token_new) %>%
-  bind_cols(last_word = last_words$token_new) %>%
   bind_cols(hymns %>% filter(doc_id == test_hymn) %>% select(text)) %>%
-  left_join(cu %>% filter(!is.na(rhyme_scheme)) %>% select(line_id, rhyme_scheme), by = "line_id") %>%
+  left_join(cu %>% filter(!is.na(rhyme_scheme)) %>% select(line_id, rhyme_scheme, verse), by = "line_id") %>%
   view("final")
+
+new_rhymes <- function(hymn, df = annotated_hymns) {
+
+  # All tokens from hymns, with rhyme info
+  annotated_tokens <- annotated_hymns %>%
+    filter(!is.na(sampa)) %>%
+    distinct(token_new = tolower(token), vowels, stress_vowel, remainder)
+
+  # Pronunciation info for relevant tokens
+  pr <- annotated_tokens %>%
+    select(-vowels) %>%
+    inner_join(distinct(cu, token_new), by = "token_new")
+
+  # Filter out all last words in our cut-up
+  last_words <- cu %>%
+    rowid_to_column("row_id") %>%
+    filter(upos != "PUNCT") %>%
+    group_by(line_id) %>%
+    slice_tail(n = 1) %>%
+    ungroup() %>%
+    select(row_id,
+           token = token_new,
+           vowels,
+           rhyme_scheme) %>%
+    mutate(token = tolower(token))
+
+  # Get rhyming contrains, if any
+  new_last_words <- last_words %>%
+    mutate(
+      must_rhyme_with = case_when(
+        rhyme_scheme == 1 ~ lag(token, 1),
+        rhyme_scheme == 2 ~ lag(token, 2),
+        rhyme_scheme == 3 ~ lag(token, 3),
+        rhyme_scheme == 4 ~ lag(token, 4),
+        TRUE ~ NA_character_)
+    ) %>%
+    left_join(pr, by = c("must_rhyme_with" = "token_new")) %>%
+    filter(!is.na(rhyme_scheme)) %>%
+    left_join(annotated_tokens,
+              by = c("vowels" = "vowels",
+                     #"upos" = "upos", We don't constrain on upos for rhymes
+                     "stress_vowel" = "stress_vowel",
+                     "remainder" = "remainder")) %>%
+    filter(must_rhyme_with != token) %>%
+    group_by(row_id) %>%
+    filter(token != "") %>%
+    slice_sample(n = 1) %>%
+    ungroup()
+
+  # Fix rhymes
+  cu_final <- cu %>%
+    left_join(select(new_last_words, row_id, token_replace = token_new), by = c("token_no" ="row_id")) %>%
+    mutate(token_new = coalesce(token_replace, token_new))
+
+  return(cu_final)
+}
 
 
 # Test some (possible) rhyms:
