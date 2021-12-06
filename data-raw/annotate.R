@@ -54,7 +54,16 @@ if (!file.exists("data/annotated_hymns.rda")) {
     left_join(select(hymns, doc_id, line_id, verse),
               by = c("doc_id" = "doc_id", "line_id" = "line_id"))
 
+  # Get rhyme scheme for each hymn
+  all_doc_ids <- annotated_hymns$doc_id %>% unique()
+
+  rhymes <- annotated_hymns$doc_id %>%
+    unique() %>%
+    map(rhyme_scheme, df = annotated_hymns, pron = pronounciation) %>%
+    unlist()
+
+  annotated_hymns$rhyme_scheme <- rhymes
+
   # use data in package
   usethis::use_data(annotated_hymns, overwrite = TRUE)
   }
-

@@ -21,6 +21,8 @@ rhyme_scheme <- function(ref_id = 1, df, pron) {
     tibble::rowid_to_column("row_id") %>%
     dplyr::filter(.data$doc_id == ref_id)
 
+  if (nrow(song) == 0) return(NA)
+
   last_words <- song %>%
     dplyr::filter(.data$upos != "PUNCT") %>%
     dplyr::group_by(.data$line_id) %>%
@@ -48,5 +50,5 @@ rhyme_scheme <- function(ref_id = 1, df, pron) {
 
   song %>%
     dplyr::left_join(rhymes, by = "row_id") %>%
-    dplyr::select(-.data$row_id)
+    dplyr::pull(.data$scheme)
 }
