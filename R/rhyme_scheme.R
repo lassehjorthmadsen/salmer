@@ -5,7 +5,7 @@
 #' similar to the \code{annotated_hymns} dataset.
 #' @param pron A tibble assumed to contain a \code{token},
 #' a \code{stress_vowel} and a \code{remainder} column, all
-#' coded in then phonetic alphabet. Passed on to \code{get_rhymes()}.
+#' coded in the phonetic alphabet. Passed on to \code{get_rhymes()}.
 #'
 #' @return a tibble with rhyme structure in new column, \code{scheme}. The
 #' number, x, in that column indicates that the word must rhyme with the x-
