@@ -14,7 +14,7 @@ similar to the \code{annotated_hymns} dataset.}
 
 \item{pron}{A tibble assumed to contain a \code{token},
 a \code{stress_vowel} and a \code{remainder} column, all
-coded in then phonetic alphabet. Passed on to \code{get_rhymes()}.}
+coded in the phonetic alphabet. Passed on to \code{get_rhymes()}.}
 }
 \value{
 a tibble with rhyme structure in new column, \code{scheme}. The
