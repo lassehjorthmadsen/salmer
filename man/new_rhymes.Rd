@@ -2,9 +2,9 @@
 % Please edit documentation in R/new_rhymes.R
 \name{new_rhymes}
 \alias{new_rhymes}
-\title{'Cut-up' a hymn (or something else)}
+\title{Find rhymes for a hymn (or something else)}
 \usage{
-new_rhymes(hymn, df = annotated_hymns)
+new_rhymes(hymn, df)
 }
 \arguments{
 \item{hymn}{A tokenized hymn that needs new rhymes, possible output
@@ -17,14 +17,12 @@ A tibble with new column \code{token_new} with a suggested
 replacement for column \code{token}.
 }
 \description{
-Using the cut-up technique popularized by William S. Burroughs,
-\code{cut_up()} replaces each word in the reference document with
-a random sample of words with same number of wovels
-and same part-of-speach-tag.
+Similar to \code{cut_up()}, \code{new_rhymes()} takes
+a piece of tokenized text input, and replaces words in
+rhyme scheme with words that rhyme.
 }
 \examples{
 ## Not run
-hymn <- annotated_hymns \%>\% dplyr::filter(doc_id == 1)
-new_rhymes(hymn)
+new_rhymes(hymn = cut_up(annotated_hymns[1:32, ]), df = annotated_hymns)
 
 }
