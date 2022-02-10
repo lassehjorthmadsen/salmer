@@ -57,17 +57,20 @@ get_rhymes("fisk", pronounciation)
 
 # Find a great first verse
 my_hymn <- 15
+no_verses <- 100
 
 rs <- annotated_hymns %>%
-   filter(doc_id == my_hymn, verse == 1, upos != "PUNCT") %>%
+  filter(doc_id == my_hymn, verse == 1, upos != "PUNCT") %>%
   group_by(line_id) %>%
   slice_max(token_id) %>%
   ungroup() %>%
   select(`Rhyme scheme` = rhyme_scheme)
 
-ve <- list(10)
+ve <- vector(mode = "list", length = no_verses)
 
-for (i in 1:10) {
+options(DT.options = list(dom = 't', pageLength = 100, autoWidth = TRUE))
+
+for (i in 1:no_verses) {
   set.seed(i)
 
   cutup <- salmer::annotated_hymns %>%
@@ -88,12 +91,11 @@ for (i in 1:10) {
   comparison <- hymns %>%
     filter(doc_id == my_hymn, verse == 1) %>%
     select(Verse = verse, Original = text) %>%
-    bind_cols(cutup_readable, final_readable, rs)
+    bind_cols(cutup_readable, final_readable, rs, i = i)
 
-  options(DT.options = list(dom = 't', pageLength = 100, autoWidth = TRUE))
+ve[[i]] <- DT::datatable(comparison, rownames = F,
+                         options = list(columnDefs = list(list(width = '10px', targets = c(0, 4)))))
 
-  ve[[i]] <- DT::datatable(comparison, rownames = F,
-                options = list(columnDefs = list(list(width = '10px', targets = c(0, 4)))))
-  }
+}
 
-
+1:100 %>% map(~ve[[.x]])
