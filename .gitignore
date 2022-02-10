@@ -3,7 +3,6 @@
 .Rdata
 .httr-oauth
 .DS_Store
-*.rda
 inst/doc
 *.gz
 doc
