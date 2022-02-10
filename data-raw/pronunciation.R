@@ -1,7 +1,7 @@
-# This script is sourced from annotate.R if no pronounciation
+# This script is sourced from annotate.R if no pronunciation
 # dictornary is found.
 #
-# Download pronounciation dictionary and tweak to search for rhymes.
+# Download pronunciation dictionary and tweak to search for rhymes.
 # Source: https://www.nb.no/sprakbanken/ressurskatalog/oai-nb-no-sbr-26/
 # See documentation at the above site and in files:
 # data-raw/DA_SAMPA_transkonv.doc
@@ -25,7 +25,7 @@ if (any(diction_files)) {
 
 vowels_pat <- "(i:|i|y:|y|e:|e|2:|2|9:|9|E:|E|u:|u|o:|o|O:|O|Q:|Q|6|A:|A|a|a:|@)[^\\$]*"
 
-pronounciation <- df %>%
+pronunciation <- df %>%
   select(token = V1, sampa = V12) %>%
   filter(!str_detect(token, "_")) %>% # Skip some multi-word entries
   mutate(rhyme_part = str_extract(sampa, "\".+"), # Stressed syllable and everyhing after
@@ -35,4 +35,4 @@ pronounciation <- df %>%
   as_tibble()
 
 # Save data for use in annotate.R
-saveRDS(pronounciation, "data-raw/pronounciation.rds")
+saveRDS(pronunciation, "data-raw/pronunciation.rds")

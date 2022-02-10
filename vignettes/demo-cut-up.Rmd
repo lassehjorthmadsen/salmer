@@ -1,7 +1,7 @@
 ---
-title: "The Cut-Up Technique for Hymns"
+title: "Demo the Cut-Up Technique for Hymns"
 author: "Lasse Hjorth Madsen"
-date: Sys.Date()
+date: "`r Sys.Date()`" 
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Demo the Cut-Up Technique for Hymns}
@@ -14,22 +14,28 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-
-library(tidyverse)
-devtools::load_all()
 ```
 
 ## Introduction
 
 The R-package, `salmer`, provides a data set with the text of 791 hymns in Danish, from the official book of hymns used in churches in Denmark. The purpose is to provide an interesting corpus of texts to use for NLP exercises and fun.
 
-The package also makes availabel a set of functions that enable users to use the [cut-up technique](link:https://en.wikipedia.org/wiki/Cut-up_technique) popularized by [William S. Burroughs](link:https://en.wikipedia.org/wiki/William_S._Burroughs), to rearrange the lyrics and use that as a creative tool.
+For the fun part, the package also makes available a set of functions that enable users to use the [cut-up technique](https://en.wikipedia.org/wiki/Cut-up_technique) popularized by [William S. Burroughs](https://en.wikipedia.org/wiki/William_S._Burroughs), to rearrange the lyrics and use that as a creative tool.
 
 The technique involves rearrange words or text fragments more or less randomly, to form new associations, and new ideas, sometimes interesting ones. 
 
+## The packages
+
+I addition to `salmer`, for this demo, we use mostly `dplyr`, but I normally just load the whole `tidyverse`.
+
+```{r libraries, message=FALSE}
+library(tidyverse)
+devtools::load_all()
+```
+
 ## The data
 
-Two data sets are provided with the package. The first, `hymns`, contain the raw text of the hymns, along with some  meta data, like number, title, author, and more (use `?hymns` to get more details). For example, the first verse of the first hymn by N.F.S. Grundtvig goes like this:
+Two data sets are provided with the package. The first, `hymns`, contain the raw text of the hymns, along with some  meta data, like number, title, author, and more (use `?hymns` to get more details). For example, the first verse of the first hymn, by N.F.S. Grundtvig, goes like this:
 
 ```{r}
 hymns %>% 
@@ -37,7 +43,7 @@ hymns %>%
   filter(doc_id == 1, verse == 1)
 ```
 
-A tokenized and annotated, version of the data is also available, as `annotated_hymms`. Here, each row represents a token (unigram) of the raw text. It is annotated with lemma, part-of-speach tag, number of vowels, a pronounciation code, information of rhyme scheme, and more. See `? annotated_hymns`. 
+A tokenized and annotated version of the data is also available, in a tibble named `annotated_hymms`. Here, each row represents a token of the raw text. It is annotated with lemma, part-of-speech tag, number of vowels, a pronounciation code, information of rhyme scheme, and more. See `?annotated_hymns`. 
 
 Selected columns and first 10 rows of that data set is shown below; it contains the tokens from the first line of the verse above:
 
@@ -47,17 +53,19 @@ annotated_hymns %>%
   head(10)
 ```
 
-The very first word is, appropriately, 'Gud' (The Lord), which contains a single vowel, is a noun, pronounced "guDs using the [SAMPA](https://en.wikipedia.org/wiki/SAMPA) phonetic script. The last token in that line is an exclamation mark, '!', which is tagged 'PUNCT' for punctuation.
+The very first word is, appropriately, "Guds" (The Lord's), which contains a single vowel, is a noun, pronounced "guDs using the [SAMPA](https://en.wikipedia.org/wiki/SAMPA) phonetic script (which, confusingly, uses the double quote character, `"`, to indicate where the main stress lies)." The last token in that line is an exclamation mark, '!', which is tagged 'PUNCT' for punctuation.
 
 The rhyme scheme is also included; that column contains a number whenever a token should rhyme with an earlier one. Only words that are last of a line can have a rhyme scheme. A number of 2, for example, means that the word should rhyme with the last word two lines above.
 
+In the small sample shown above, no words has a rhyme scheme; last word of that line ("løn") cannot be required to rhyme with an earlier word, since this is the first line and there are no earlier last-of-line words to rhyme with. 
+
 ## Cutting it up
 
-The cut-up technique, as implemented here, rearranges the words randomly, but with some constrains: We want to replace words only with words that has the same number of vowels and the same part-of-speach tag. That way, the hymns remain singable and readable -- but not nessarily meaningful.
+The cut-up technique, as implemented here, rearranges the words randomly, but with some constrains: We want to replace words only with words that has the same number of vowels and the same part-of-speech tag. That way, the hymns remain singable and readable -- but not necessarily meaningful.
 
-The information on pronounciation and rhyme scheme allows us to impose additional contrains on words that must rhyme, so we also retain the rhyme structure of the original.
+The information on pronunciation and rhyme scheme allows us to impose additional constrains on words that must rhyme, so we also retain the rhyme structure of the original. More on rhymes in next sections.
 
-Let's try to use the cut-up technique on one popular hymn, *Op, al den ting, som Gud har gjort*, by Hans Adolph Brorson, 1734. This is hymn number [15](link:https://www.dendanskesalmebogonline.dk/salme/15) in *Den Danske Salmebog*.
+Let's try to use the cut-up technique on one popular hymn, *Op, al den ting, som Gud har gjort*, by Hans Adolph Brorson, 1734. This is hymn number [15](https://www.dendanskesalmebogonline.dk/salme/15) in *Den Danske Salmebog*.
 
 The first verse reads like this:
 
@@ -69,12 +77,12 @@ hymns %>%
   dplyr::select(verse, text) 
 ```
 
-The `cut-up()` function takes as input a hymn number (here, `r my_hymn`, stored in `my_hymn`) and an dataframe with annotations, here `annotated_hymns`. We can retain a (little) bit of sanity by excepting punctuation from being cut up, so that an exclamation mark will stay that and not turn into a semicolon, for example (The `except` parameter accepts a character vector, so we can have more than one exception; we might want to experiment with keeping, say, pronouns or nouns.)
+The `cut-up()` function takes as input a hymn number (here, `r my_hymn`, stored in `my_hymn`) and an dataframe with annotations, here `annotated_hymns`. We can retain a (little) bit of sanity by excepting punctuation from being cut up, so that an exclamation mark will stay that and not turn into a semicolon, for example. (The `except` parameter accepts a character vector, so we can have more than one exception; we might want to experiment with keeping, say, pronouns or nouns.)
 
 First, cutting it up:
 
 ```{r}
-set.seed(1734)
+set.seed(2718) # For reproducibility
 
 cutup <- annotated_hymns %>% 
   cut_up(my_hymn, except = "PUNCT") %>% 
@@ -87,9 +95,15 @@ Inspecting a few colums from the output of `cut_up()`, we see that it has added 
 cutup %>% dplyr::select(token, upos, vowels, token_new) %>% slice_head(n = 8)
 ```
 
+The way `cut_up()` works is really simple: It takes a bit of annotated_hymns, that is, one specific hymn, then join it with the full data frame, using upos and number of vowels as keys. Since every word usually matches many words with same upos and same number of vowels, that generates a rather long list of possible matches. From that list, we just sample one word for every word, so we get back the original number of words.
+
+A feature of this way of doing it, is that words are sampled with a probability in proportion to how often they appear in the full book of hymns. I suspect this tend to make the result more readable and seem more natural, since rare words stay rare.
+
+Another note is, that words can have different POS-tags depending on the context they appear in. "Love" can be both a verb and a noun, for example. So when "love" appears as a noun ("for the love of God") it will be replaces with another word than *can* be a noun. Like "heat", for example. 
+
 ## Collapsing back into readable text
 
-In order to better be able to appreciate the beauty of the newky created poetry, we would like to turn the one-token-per-row dataframe back in a one-line-per-row dataframe like in `hymns`. For that, we use the function `collapse_annotation()`.
+In order to better be able to appreciate the beauty of the newly created poetry, we would like to turn the one-token-per-row dataframe back in a one-line-per-row dataframe like in `hymns`. For that, we use the function `collapse_annotation()`.
 
 The cut-up-version, has suggested words in the `token_new` column. This version will read as follows:
 
@@ -98,6 +112,8 @@ cutup %>%
   collapse_annotation(token_new) %>% 
   filter(line_id <= 4)
 ```
+
+## Restoring rhymes
 
 We see that we have lost the rhymes. To get them back, we can rearrange just the words that need to rhyme, but with additional contrains. For this, we use the `new_rhymes()` function:
 
@@ -131,6 +147,7 @@ comparison <- hymns %>%
   select(Verse = verse, Original = text) %>%
   bind_cols(cutup_readable, final_readable, rs)
 
+# put in a nice data table
 options(DT.options = list(dom = 't', pageLength = 100, autoWidth = TRUE))
 
 DT::datatable(comparison, rownames = F,
@@ -138,14 +155,51 @@ DT::datatable(comparison, rownames = F,
 
 ```
 
-```{r}
-dplyr::bind_cols(
-  collapse_annotation(cutup, token), 
-  collapse_annotation(cutup, token_new)
-  ) %>% 
-  dplyr::select(doc_id = doc_id...1, 
-         line_id = line_id...2, 
-         original = text...3, 
-         cut_up_text = text...6)
+The `new_rhymes()` function basically does the same shuffle as the `cut_up()` function, but only for words that are required to rhyme, and with additional constrain on the pronunciation, that will (try to) find alternative words that rhymes where they are supposed to.
+
+In the example above, we see in the column with the original lyrics, that "stort" in the third line rhymes with "gjort" in the first line. And the finale word, "bevise" rhymes with "prise" two lines above. Therefore, "tryg" in the cut-up version gets replaced with "klar" so it properly rhymes with "var". Likewise, "julefest" gets replaced with "befaler" that rhymes with "taler". 
+
+And so, we have a new version of the first verse of a popular hymn, cut-up and rearranged like William S. Burroughs would have done. It rhymes and is singable, doesn't  make much sense, but might serve as an inspirational starting point for writing new hymns.
+
+We might want to generate many cut-ups to get something that feels interesting, but that is what we have `R` for.
+
+Happy writing!
+
+## What rhymes?
+
+Since finding words that rhymes, is by far the most tricky bit of this exercise, let's look a bit into that.
+
+A perfect rhyme, according to [Wikipedia](https://en.wikipedia.org/wiki/Perfect_and_imperfect_rhymes), is when both of these conditions are meet:
+
+   1. The stressed vowel sound in both words is identical, as well as any subsequent sound. For example, "trouble" and "bubble" are perfect rhymes, because the first, stressed, vowel sound *and* subsequent vowel sounds are the same. 
+
+   1. The onset (the beginning consonant sound) of the stressed syllable  must differ. For example, "bean" and "green" is a perfect rhyme, while "leave" and "believe" is not.
+
+So to find rhymes we need information on pronunciation. To annotate the hymns from *Den Danske Salmebog*, I used a pronunciation dictionary for Danish obtained [here:](https://www.nb.no/sprakbanken/ressurskatalog/oai-nb-no-sbr-26/). (The code used to actually do the annotation is in the `pronunciation.R` script in the `data-raw` folder.) 
+) 
+
+To illustrate why it is necessary to use pronunciations, consider a couple of examples:
+
+1. *Anger* doesn't rhyme with *danger* because the vowel sounds are pronounced diffently, even though they are spelled the same. There are many examples of this: *Coward*/*toward*; *cross*/*gross*; *deaf*/*leaf*.
+1. *Crooked* doesn't rhyme with	*looked* because the stress is on different vowels; second and first respectively. A few other examples are: *Decade*/*degrade*; *distress*/*mistress*. 
+1. As mentioned, the consonant sound starting the stressed vowel also cannot be identical. So while  *sorrow*, *borrow* and *tomorrow* all rhymes, *tomorrow* wouldn't rhyme with the made-up word of *hymorrow*. 
+
+Here's an example of pronunciation of the Danish word "prise" (praise), from the `annotated_hymns` data set:
+
+```{r rhyme_example}
+annotated_hymns %>% 
+  filter(token == "prise") %>% 
+  slice_head() %>% 
+  select(token, sampa, vowels, stress_vowel, remainder)
 ```
+
+The double quote character, `"`, indicate the the stress is on the first syllabus. The vowel part of that is pronunced `i:` (a long i, like the English e in "eve"). And the remainder is pronounced `$s@`. For a word to rhyme, both the stress vowel and the remainder must match.
+
+To not mess op the rhythmic unit (foot), we also match on number of vowels, when finding rhyming replacements.
+
+The final constraint is, that a word cannot rhyme with itself, of course. When we look for non-identical words that match both on number of vowels, the stress vowel and the remainder, we don't also have to make sure that the stressed consonant is different.
+
+Still, the algoritm is not perfect. First, because we might not find any rhymes that fit all contraints. In that case, the word doesn't get replaced. Second, the pronunciation dictionary, while big, doesn't have every word from the book of hymns. Third, spoken language is not an exact science; several pronunciations of the same word may be acceptable.
+
+All being said, I think `get_rhymes()` does a reasonable job of finding likely rhymes.
 
