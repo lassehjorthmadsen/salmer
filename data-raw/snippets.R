@@ -1,10 +1,11 @@
 library(tidyverse)
 library(devtools)
 library(DT)
-load_all()
+library(salmer)
+# load_all()
 
-# Get pronounciation dictionary
-# pronounciation <- readRDS("data-raw/pronounciation.rds")
+# Get pronunciation dictionary
+pronunciation <- readRDS("data-raw/pronunciation.rds")
 
 test_hymn <- 15
 
@@ -49,15 +50,19 @@ datatable(comparison, rownames = F,
 
 
 # Test some (possible) rhyms:
-get_rhymes("borg", pronounciation)
-get_rhymes("kartofler", pronounciation)
-get_rhymes("smerte", pronounciation)
-get_rhymes("svin", pronounciation)
-get_rhymes("fisk", pronounciation)
+get_rhymes("borg", pronunciation)
+get_rhymes("kartofler", pronunciation)
+get_rhymes("smerte", pronunciation)
+get_rhymes("svin", pronunciation)
+get_rhymes("fisk", pronunciation)
 
 # Find a great first verse
 my_hymn <- 15
-no_verses <- 100
+no_tries <- 200
+
+verses <- annotated_hymns %>%
+  filter(doc_id == my_hymn) %>%
+  pull(verse) %>%
 
 rs <- annotated_hymns %>%
   filter(doc_id == my_hymn, verse == 1, upos != "PUNCT") %>%
@@ -66,16 +71,20 @@ rs <- annotated_hymns %>%
   ungroup() %>%
   select(`Rhyme scheme` = rhyme_scheme)
 
-ve <- vector(mode = "list", length = no_verses)
+# duplicate rs for each verse (since it fails for some verses)
+rs <- slice(rs, rep(1:nrow(rs), verses))
+
+# Initialize list to hold datatables
+ve <- vector(mode = "list", length = no_tries)
 
 options(DT.options = list(dom = 't', pageLength = 100, autoWidth = TRUE))
 
-for (i in 1:no_verses) {
+for (i in 1:no_tries) {
   set.seed(i)
 
   cutup <- salmer::annotated_hymns %>%
-    cut_up(my_hymn, except = "PUNCT") %>%
-    filter(verse == 1)
+    cut_up(my_hymn, except = "PUNCT")
+    # %>% filter(verse == 1)
 
   final <- cutup %>% new_rhymes(annotated_hymns)
 
@@ -87,15 +96,26 @@ for (i in 1:no_verses) {
     collapse_annotation(token_new) %>%
     select(`Fixed rhymes` = text)
 
+  # save text version of final output
+  out <- bind_rows(tibble(`Fixed rhymes` = as.character(i)),
+            final_readable,
+            tibble(`Fixed rhymes` = NULL))
+
+  for (x in seq(5, nrow(final_readable) + verses + 1, 5)) {
+    out <- add_row(out, `Fixed rhymes` = "", .after = x)
+  }
+
+  write_csv2(out, file = "data-raw/out.csv", append = T)
+
   # show final cut-up version along with original and other bits
   comparison <- hymns %>%
-    filter(doc_id == my_hymn, verse == 1) %>%
+    filter(doc_id == my_hymn) %>%
     select(Verse = verse, Original = text) %>%
     bind_cols(cutup_readable, final_readable, rs, i = i)
 
-ve[[i]] <- DT::datatable(comparison, rownames = F,
+  ve[[i]] <- DT::datatable(comparison, rownames = F,
                          options = list(columnDefs = list(list(width = '10px', targets = c(0, 4)))))
 
 }
 
-1:100 %>% map(~ve[[.x]])
+1:no_tries %>% map(~ve[[.x]])

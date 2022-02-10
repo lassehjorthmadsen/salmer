@@ -53,7 +53,7 @@ annotated_hymns %>%
   head(10)
 ```
 
-The very first word is, appropriately, "Guds" (The Lord's), which contains a single vowel, is a noun, pronounced "guDs using the [SAMPA](https://en.wikipedia.org/wiki/SAMPA) phonetic script (which, confusingly, uses the double quote character, `"`, to indicate where the main stress lies)." The last token in that line is an exclamation mark, '!', which is tagged 'PUNCT' for punctuation.
+The very first word is, appropriately, "Guds" (The Lord's), which contains a single vowel, is a noun, pronunced "guDs using the [SAMPA](https://en.wikipedia.org/wiki/SAMPA) phonetic script (which, confusingly, uses the double quote character, `"`, to indicate where the main stress lies)." The last token in that line is an exclamation mark, '!', which is tagged 'PUNCT' for punctuation.
 
 The rhyme scheme is also included; that column contains a number whenever a token should rhyme with an earlier one. Only words that are last of a line can have a rhyme scheme. A number of 2, for example, means that the word should rhyme with the last word two lines above.
 
