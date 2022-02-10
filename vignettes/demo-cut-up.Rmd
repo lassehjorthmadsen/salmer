@@ -1,5 +1,7 @@
 ---
-title: "Demo the Cut-Up Technique for Hymns"
+title: "The Cut-Up Technique for Hymns"
+author: "Lasse Hjorth Madsen"
+date: Sys.Date()
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Demo the Cut-Up Technique for Hymns}
@@ -7,61 +9,139 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
 
-```{r setup}
-library(salmer)
+library(tidyverse)
+devtools::load_all()
 ```
 
 ## Introduction
 
-Let's try to use the cut-up technique on the top popular hymn, *Se, nu stiger solen af havets skød*, by Jacob Knudsen, 1891. This is number [754](link:https://www.dendanskesalmebogonline.dk/salme/754) in *Den Danske Salmebog*.
+The R-package, `salmer`, provides a data set with the text of 791 hymns in Danish, from the official book of hymns used in churches in Denmark. The purpose is to provide an interesting corpus of texts to use for NLP exercises and fun.
+
+The package also makes availabel a set of functions that enable users to use the [cut-up technique](link:https://en.wikipedia.org/wiki/Cut-up_technique) popularized by [William S. Burroughs](link:https://en.wikipedia.org/wiki/William_S._Burroughs), to rearrange the lyrics and use that as a creative tool.
+
+The technique involves rearrange words or text fragments more or less randomly, to form new associations, and new ideas, sometimes interesting ones. 
+
+## The data
+
+Two data sets are provided with the package. The first, `hymns`, contain the raw text of the hymns, along with some  meta data, like number, title, author, and more (use `?hymns` to get more details). For example, the first verse of the first hymn by N.F.S. Grundtvig goes like this:
 
 ```{r}
 hymns %>% 
-  dplyr::filter(doc_id == 754) %>% 
-  dplyr::select(doc_id, verse, text) 
+  select(doc_id, verse, text, author) %>% 
+  filter(doc_id == 1, verse == 1)
 ```
+
+A tokenized and annotated, version of the data is also available, as `annotated_hymms`. Here, each row represents a token (unigram) of the raw text. It is annotated with lemma, part-of-speach tag, number of vowels, a pronounciation code, information of rhyme scheme, and more. See `? annotated_hymns`. 
+
+Selected columns and first 10 rows of that data set is shown below; it contains the tokens from the first line of the verse above:
+
+```{r}
+annotated_hymns %>% 
+  select(doc_id, token_id, token, vowels, upos, sampa, rhyme_scheme) %>% 
+  head(10)
+```
+
+The very first word is, appropriately, 'Gud' (The Lord), which contains a single vowel, is a noun, pronounced "guDs using the [SAMPA](https://en.wikipedia.org/wiki/SAMPA) phonetic script. The last token in that line is an exclamation mark, '!', which is tagged 'PUNCT' for punctuation.
+
+The rhyme scheme is also included; that column contains a number whenever a token should rhyme with an earlier one. Only words that are last of a line can have a rhyme scheme. A number of 2, for example, means that the word should rhyme with the last word two lines above.
 
 ## Cutting it up
 
-Inspecting a few colums from the annotation dataframe, `annotated_hymns`, available in the package, we see that `cut_up()` adds a new column, `token_new` with a suggestion for a new token, with same number of vowels and same part-of-speach-tag (in column `upos`).
+The cut-up technique, as implemented here, rearranges the words randomly, but with some constrains: We want to replace words only with words that has the same number of vowels and the same part-of-speach tag. That way, the hymns remain singable and readable -- but not nessarily meaningful.
 
-We can retain a (little) bit of sanity, by excepting punctuation from being cut up, so that an exclamation mark will stay that and not turn into a semicolon. (The `except` parameter accepts a character vector, so we can have more than one exception).
+The information on pronounciation and rhyme scheme allows us to impose additional contrains on words that must rhyme, so we also retain the rhyme structure of the original.
+
+Let's try to use the cut-up technique on one popular hymn, *Op, al den ting, som Gud har gjort*, by Hans Adolph Brorson, 1734. This is hymn number [15](link:https://www.dendanskesalmebogonline.dk/salme/15) in *Den Danske Salmebog*.
+
+The first verse reads like this:
 
 ```{r}
-cut754 <- salmer::annotated_hymns %>% cut_up(754, except = "PUNCT")
+my_hymn <- 15
 
-cut754 %>% dplyr::select(doc_id, token, upos, vowels, token_new)
+hymns %>% 
+  dplyr::filter(doc_id == my_hymn, verse == 1) %>% 
+  dplyr::select(verse, text) 
+```
+
+The `cut-up()` function takes as input a hymn number (here, `r my_hymn`, stored in `my_hymn`) and an dataframe with annotations, here `annotated_hymns`. We can retain a (little) bit of sanity by excepting punctuation from being cut up, so that an exclamation mark will stay that and not turn into a semicolon, for example (The `except` parameter accepts a character vector, so we can have more than one exception; we might want to experiment with keeping, say, pronouns or nouns.)
+
+First, cutting it up:
+
+```{r}
+set.seed(1734)
+
+cutup <- annotated_hymns %>% 
+  cut_up(my_hymn, except = "PUNCT") %>% 
+  filter(verse == 1)
+```
+
+Inspecting a few colums from the output of `cut_up()`, we see that it has added a new column, `token_new` with a suggestion for a new token, with same number of vowels and same part-of-speach-tag (in column `upos`).
+
+```{r}
+cutup %>% dplyr::select(token, upos, vowels, token_new) %>% slice_head(n = 8)
 ```
 
 ## Collapsing back into readable text
 
-In order to better be able to appreciate the beauty of the poetry, we would like to turn the one-token-per-row dataframe back in a one-line-per-row dataframe like in `hymns`. For that, we use the function `collapse_annotation()`.
-
-For starters, we can check how the original text looks like, by collapsing using the `token` column:
-
-```{r}
-cut754 %>% salmer::collapse_annotation(token)
-```
+In order to better be able to appreciate the beauty of the newky created poetry, we would like to turn the one-token-per-row dataframe back in a one-line-per-row dataframe like in `hymns`. For that, we use the function `collapse_annotation()`.
 
 The cut-up-version, has suggested words in the `token_new` column. This version will read as follows:
 
 ```{r}
-cut754 %>% salmer::collapse_annotation(token_new)
+cutup %>% 
+  collapse_annotation(token_new) %>% 
+  filter(line_id <= 4)
 ```
 
-For better comparison, we can arrange the two versions side-by-side:
+We see that we have lost the rhymes. To get them back, we can rearrange just the words that need to rhyme, but with additional contrains. For this, we use the `new_rhymes()` function:
+
+```{r}
+final <- cutup %>% new_rhymes(annotated_hymns)
+```
+
+For better comparison, we can arrange the three versions, original, cup-up, and cut-up with restored rhymes, side-by-side with a bit of extra information.
+
+```{r}
+# Collapsed, i.e. readable, version
+cutup_readable <- cutup %>% 
+  collapse_annotation(token_new) %>% 
+  select(`Cut-up` = text)
+
+final_readable <- final %>% 
+  collapse_annotation(token_new) %>% 
+  select(`Fixed rhymes` = text)
+
+# Rhyme scheme
+rs <- cutup %>%
+  filter(upos != "PUNCT") %>%
+  group_by(line_id) %>%
+  slice_max(token_id) %>%
+  ungroup() %>%
+  select(`Rhyme scheme` = rhyme_scheme)
+
+# show final cut-up version along with original and other bits
+comparison <- hymns %>%
+  filter(doc_id == my_hymn, verse == 1) %>%
+  select(Verse = verse, Original = text) %>%
+  bind_cols(cutup_readable, final_readable, rs)
+
+options(DT.options = list(dom = 't', pageLength = 100, autoWidth = TRUE))
+
+DT::datatable(comparison, rownames = F,
+            options = list(columnDefs = list(list(width = '10px', targets = c(0, 4)))))
+
+```
 
 ```{r}
 dplyr::bind_cols(
-  salmer::collapse_annotation(cut754, token), 
-  salmer::collapse_annotation(cut754, token_new)
+  collapse_annotation(cutup, token), 
+  collapse_annotation(cutup, token_new)
   ) %>% 
   dplyr::select(doc_id = doc_id...1, 
          line_id = line_id...2, 

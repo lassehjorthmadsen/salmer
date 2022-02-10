@@ -54,3 +54,46 @@ get_rhymes("kartofler", pronounciation)
 get_rhymes("smerte", pronounciation)
 get_rhymes("svin", pronounciation)
 get_rhymes("fisk", pronounciation)
+
+# Find a great first verse
+my_hymn <- 15
+
+rs <- annotated_hymns %>%
+   filter(doc_id == my_hymn, verse == 1, upos != "PUNCT") %>%
+  group_by(line_id) %>%
+  slice_max(token_id) %>%
+  ungroup() %>%
+  select(`Rhyme scheme` = rhyme_scheme)
+
+ve <- list(10)
+
+for (i in 1:10) {
+  set.seed(i)
+
+  cutup <- salmer::annotated_hymns %>%
+    cut_up(my_hymn, except = "PUNCT") %>%
+    filter(verse == 1)
+
+  final <- cutup %>% new_rhymes(annotated_hymns)
+
+  cutup_readable <- cutup %>%
+    collapse_annotation(token_new) %>%
+    select(`Cut-up` = text)
+
+  final_readable <- final %>%
+    collapse_annotation(token_new) %>%
+    select(`Fixed rhymes` = text)
+
+  # show final cut-up version along with original and other bits
+  comparison <- hymns %>%
+    filter(doc_id == my_hymn, verse == 1) %>%
+    select(Verse = verse, Original = text) %>%
+    bind_cols(cutup_readable, final_readable, rs)
+
+  options(DT.options = list(dom = 't', pageLength = 100, autoWidth = TRUE))
+
+  ve[[i]] <- DT::datatable(comparison, rownames = F,
+                options = list(columnDefs = list(list(width = '10px', targets = c(0, 4)))))
+  }
+
+
