@@ -118,4 +118,16 @@ for (i in 1:no_tries) {
 
 }
 
+# Show in data tables
 1:no_tries %>% map(~ve[[.x]])
+
+
+# Find rhymes
+pr <- pronunciation %>%
+  mutate(vowels = str_count(tolower(token), "a|e|i|o|u|y|æ|ø|å|é|ó|í"))
+
+pr %>% filter(vowels == 3) %>% slice_sample(n = 10)
+
+get_rhymes("gir", filter(pr, vowels >= 1))
+
+get_rhymes("nærmes", filter(annotated_hymns, vowels >= 1))
