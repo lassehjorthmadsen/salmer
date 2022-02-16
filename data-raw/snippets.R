@@ -128,6 +128,6 @@ pr <- pronunciation %>%
 
 pr %>% filter(vowels == 3) %>% slice_sample(n = 10)
 
-get_rhymes("gir", filter(pr, vowels >= 1))
+get_rhymes("sammen", filter(pr, vowels == 2))
 
 get_rhymes("nærmes", filter(annotated_hymns, vowels >= 1))
