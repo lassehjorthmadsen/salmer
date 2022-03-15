@@ -29,8 +29,9 @@ The technique involves rearrange words or text fragments more or less randomly, 
 I addition to `salmer`, for this demo, we use mostly `dplyr`, but I normally just load the whole `tidyverse`.
 
 ```{r libraries, message=FALSE}
-library(tidyverse)
-devtools::load_all()
+library(dplyr)
+library(DT)
+library(salmer)
 ```
 
 ## The data
@@ -73,8 +74,8 @@ The first verse reads like this:
 my_hymn <- 15
 
 hymns %>% 
-  dplyr::filter(doc_id == my_hymn, verse == 1) %>% 
-  dplyr::select(verse, text) 
+  filter(doc_id == my_hymn, verse == 1) %>% 
+  select(verse, text) 
 ```
 
 The `cut-up()` function takes as input a hymn number (here, `r my_hymn`, stored in `my_hymn`) and an dataframe with annotations, here `annotated_hymns`. We can retain a (little) bit of sanity by excepting punctuation from being cut up, so that an exclamation mark will stay that and not turn into a semicolon, for example. (The `except` parameter accepts a character vector, so we can have more than one exception; we might want to experiment with keeping, say, pronouns or nouns.)
@@ -92,7 +93,7 @@ cutup <- annotated_hymns %>%
 Inspecting a few colums from the output of `cut_up()`, we see that it has added a new column, `token_new` with a suggestion for a new token, with same number of vowels and same part-of-speach-tag (in column `upos`).
 
 ```{r}
-cutup %>% dplyr::select(token, upos, vowels, token_new) %>% slice_head(n = 8)
+cutup %>% select(token, upos, vowels, token_new) %>% slice_head(n = 8)
 ```
 
 The way `cut_up()` works is really simple: It takes a bit of annotated_hymns, that is, one specific hymn, then join it with the full data frame, using upos and number of vowels as keys. Since every word usually matches many words with same upos and same number of vowels, that generates a rather long list of possible matches. From that list, we just sample one word for every word, so we get back the original number of words.
@@ -150,7 +151,7 @@ comparison <- hymns %>%
 # put in a nice data table
 options(DT.options = list(dom = 't', pageLength = 100, autoWidth = TRUE))
 
-DT::datatable(comparison, rownames = F,
+datatable(comparison, rownames = F,
             options = list(columnDefs = list(list(width = '10px', targets = c(0, 4)))))
 
 ```

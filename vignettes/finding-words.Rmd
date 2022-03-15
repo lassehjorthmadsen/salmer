@@ -1,5 +1,7 @@
 ---
 title: "Finding Characteristic Words for Famous Writers of Hymns"
+author: "Lasse Hjorth Madsen"
+date: "`r Sys.Date()`" 
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Finding Characteristic Words for Famous Writers of Hymns}

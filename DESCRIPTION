@@ -1,5 +1,5 @@
 Package: salmer
-Title: A Data Set With Hymns in Danish
+Title: A Data Set with Hymns in Danish
 Version: 0.0.1
 Authors@R: 
     person(given = "Lasse",
@@ -7,8 +7,9 @@ Authors@R:
            role = c("aut", "cre"),
            email = "lassehjorthmadsen@gmail.com")
 Description: Provides text from 791 hymns in Danish, from 
-   'Den Danske Samlebog', optained from www.dendanskesalmebogonline.dk.
-   This is intended as a data set for fun, teaching, and research in NLP.
+   'Den Danske Samlebog', obtained from (<www.dendanskesalmebogonline.dk>)
+   This is intended as a data set for fun, teaching, and research in Natural 
+   Language Processing.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -17,7 +18,13 @@ RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)
 Suggests: 
+    DT,
+    forcats,
+    ggplot2,
     rmarkdown,
+    tidytext,
+    stopwords,
+    tidylo,
     knitr,
     testthat (>= 3.0.0),
 Config/testthat/edition: 3
@@ -27,9 +34,4 @@ Imports:
     magrittr,
     stringr,
     tibble,
-    forcats,
-    ggplot2,
-    tidytext,
-    stopwords,
-    tidylo,
     rlang
