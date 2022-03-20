@@ -8,3 +8,4 @@ temp.R
 snippets.R
 cran-comments.md
 ^cran-comments\.md$
+^tools

@@ -12,10 +12,6 @@
 #' @return A tibble with new column \code{token_new} with a suggested
 #' replacement for column \code{token}.
 #'
-#' @examples
-#' ## Not run
-#' new_rhymes(hymn = cut_up(annotated_hymns[1:32, ]), df = annotated_hymns)
-#'
 #' @export
 new_rhymes <- function(hymn, df) {
 

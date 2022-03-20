@@ -25,7 +25,7 @@ hymns
 \description{
 A dataset containing full text and metadata for 791 hymns officially
 used in Danish churches. Data is scrapped from
-\href{http://www.dendanskesalmebogonline.dk}{Den Danske Salmebog Online}.
+\href{(\url{http://www.dendanskesalmebogonline.dk})}{Den Danske Salmebog Online}.
 Each row corresponds to one line from one hymn, with information
 on hymn number, title, author and more (see below).
 }

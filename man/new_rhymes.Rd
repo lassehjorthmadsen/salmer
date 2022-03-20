@@ -21,8 +21,3 @@ Similar to \code{cut_up()}, \code{new_rhymes()} takes
 a piece of tokenized text input, and replaces words in
 rhyme scheme with words that rhyme.
 }
-\examples{
-## Not run
-new_rhymes(hymn = cut_up(annotated_hymns[1:32, ]), df = annotated_hymns)
-
-}
